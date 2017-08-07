@@ -2,6 +2,7 @@
 using Moq;
 using NSubstitute;
 using NSubstitute.Core;
+using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 
 namespace NSubstituteTutorial
@@ -75,14 +76,17 @@ namespace NSubstituteTutorial
             moq.Setup(calc => calc.SetMode("HEX")).Throws(new ArgumentException());
             Assert.Throws<ArgumentException>(() => moq.Object.SetMode("HEX"));
 
-
-            nsub.Add(1, 1).Returns(x => { throw new InvalidOperationException(); });
+            // using NSubstitute.ExceptionExtensions;
+            nsub.Add(1, 1).Throws(new Exception());
             Assert.Throws<InvalidOperationException>(() => nsub.Add(1, 1));
 
-            // For voids - not so nice..
-            nsub.When(x => x.SetMode("HEX"))
-                .Do(x => { throw new ArgumentException(); });
+            nsub.When(x => x.SetMode("HEX")).Throw<Exception>();
             Assert.Throws<ArgumentException>(() => nsub.SetMode("HEX"));
+
+            // The extension method syntax is much cleaner
+            // Without it, the setup becomes the following
+            nsub.Add(1, 1).Returns(x => { throw new InvalidOperationException(); });
+            nsub.When(x => x.SetMode("HEX")).Do(x => { throw new ArgumentException(); });
         }
 
         [Test]
