@@ -167,11 +167,11 @@ namespace NSubstituteTutorial
             sub.Add(0, 3);
             sub.Received(2).Add(Arg.Is(0), Arg.Is<int>(x => x <= 2));
             // In this case the Arg.Is(0) is required by NSubstitute
-            // (providing 0 directly results in a AmbiguousArgumentsException)
+            // (providing 0 directly results in an AmbiguousArgumentsException)
         }
 
         [Test]
-        public void Checking_ExoticCalls()
+        public void Checking_Properties()
         {
             // Property Getter
             string call = nsub.Mode;
@@ -180,34 +180,7 @@ namespace NSubstituteTutorial
             // Property Setter
             nsub.Mode = "BIN";
             nsub.Received().Mode = "BIN";
-
-
-            // Indexer
-            var dictionary = Substitute.For<IDictionary<string, int>>();
-            dictionary["test"] = 1;
-            dictionary.Received()["test"] = 1;
-            dictionary.Received()["test"] = Arg.Is<int>(x => x < 5);
-
-            // For Events, see: http://nsubstitute.github.io/help/received-calls/#checking_event_subscriptions
         }
-
-        // http://nsubstitute.github.io/help/received-in-order/
-        //[Test]
-        //public void Checking_OrderOfCalls()
-        //{
-        //    var connection = Substitute.For<IConnection>();
-        //    var command = Substitute.For<ICommand>();
-        //    var subject = new Controller(connection, command);
-
-        //    subject.DoStuff();
-
-        //    Received.InOrder(() => {
-        //        connection.Open();
-        //        command.Run(connection);
-        //        connection.Close();
-        //    });
-        //}
-
         #endregion
 
         #region Providing Values
@@ -267,6 +240,16 @@ namespace NSubstituteTutorial
             Assert.AreEqual("DEC", nsub.Mode);
             Assert.AreEqual("HEX", nsub.Mode);
             Assert.AreEqual("BIN", nsub.Mode);
+
+            // Multiple return values with a function
+            nsub.Mode.Returns(
+                x => "DEC",
+                x => "HEX",
+                x => throw new Exception()
+            );
+            Assert.AreEqual("DEC", nsub.Mode);
+            Assert.AreEqual("HEX", nsub.Mode);
+            Assert.Throws<Exception>(() => { var result = nsub.Mode; });
         }
 
         [Test]
@@ -309,24 +292,10 @@ namespace NSubstituteTutorial
         [Test]
         public void ProvideValues_FromFunction_WithCallInfo()
         {
-            // Property
-            nsub.Mode.Returns(
-                x => "DEC",
-                x => "HEX",
-                x => throw new Exception()
-            );
-            Assert.AreEqual("DEC", nsub.Mode);
-            Assert.AreEqual("HEX", nsub.Mode);
-            Assert.Throws<Exception>(() => { var result = nsub.Mode; });
-
-
-            // Method with CallInfo
             nsub
                 .Add(Arg.Any<int>(), Arg.Any<int>())
                 .Returns((CallInfo callInfo) =>
                 {
-                    // todo: callInfo.ReceivedCalls() ?
-
                     // Same signature is used for ReturnsForAnyArgs
 
                     // Get argument value with indexer
@@ -342,7 +311,7 @@ namespace NSubstituteTutorial
                     // Get parameter type information
                     Assert.That(callInfo.ArgTypes().First(), Is.EqualTo(typeof(int)));
 
-                    // Actual implementation
+                    // Actual return value
                     return firstArg + secondArg;
                 });
 
@@ -381,71 +350,7 @@ namespace NSubstituteTutorial
 
             sub.SetMode("HEX");
             Assert.True(called);
-
-
-            // Full callback control
-            int calls = 0;
-            sub
-                .When(x => x.Add(0, 0))
-                .Do(
-                    // Also: Callback.Always, Callback.FirstThrow and Callback.AlwaysThrow
-                    Callback.First((CallInfo callInfo) => Debug.WriteLine("first call"))
-                        .Then((CallInfo callInfo) => Debug.WriteLine("2nd call"))
-                        .Then((CallInfo callInfo) => Debug.WriteLine("3rd call"))
-                        .ThenThrow<Exception>((CallInfo callInfo) => throw new Exception())
-                        .ThenKeepDoing((CallInfo callInfo) => Debug.WriteLine("subsequent calls"))
-                        // Also: ThenKeepThrowing()
-                        .AndAlways((CallInfo callInfo) => calls++)
-                );
-
-            for (int i = 0; i < 3; i++)
-            {
-                sub.Add(0, 0);
-            }
-            Assert.That(calls, Is.EqualTo(3));
         }
-
-        #region InvokeArgumentCallbacks
-        public interface IOrderProcessor
-        {
-            void ProcessOrder(Action<bool> orderProcessed);
-        }
-
-        public class OrderPlacedCommand
-        {
-            private readonly IOrderProcessor _orderProcessor;
-
-            public bool OkCalled { get; set; }
-
-            public OrderPlacedCommand(IOrderProcessor orderProcessor)
-            {
-                _orderProcessor = orderProcessor;
-            }
-
-            public void Execute()
-            {
-                _orderProcessor.ProcessOrder(
-                    wasOk =>
-                    {
-                        if (wasOk)
-                            OkCalled = true;
-                    }
-                );
-            }
-        }
-
-        [Test]
-        public void InvokeArgumentCallbacks()
-        {
-            var processor = Substitute.For<IOrderProcessor>();
-            processor.ProcessOrder(Arg.Invoke(true)); // <-- Magic here
-
-            var command = new OrderPlacedCommand(processor);
-            command.Execute();
-
-            Assert.True(command.OkCalled);
-        }
-        #endregion
 
         #region Performing actions with arguments
         [Test]

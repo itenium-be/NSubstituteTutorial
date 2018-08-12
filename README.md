@@ -19,6 +19,13 @@ Not covered:
 
 Comparing the syntax differences between [Mock][Mock] and NSubstitute.
 
+
+## 3 Not covered
+
+Some additional NSubstitute snippets with more advanced functionality
+not covered in the blog posts.
+
+
 [NSubstitute]: https://github.com/nsubstitute/NSubstitute
 [Mock]: https://github.com/moq/moq4
 [nsubstitute-blog-post]: http://itenium.be/blog/dotnet/nsubstitute-tutorial
