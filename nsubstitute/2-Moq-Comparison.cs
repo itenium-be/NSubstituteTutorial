@@ -27,7 +27,9 @@ namespace NSubstituteTutorial
             moq.Setup(calc => calc.Mode).Returns("DEC");
             Assert.AreEqual("DEC", moq.Object.Mode);
 
-            nsub.Mode.Returns("DEC");
+            nsub.Mode = "DEC";
+            // Can also use the same syntax as for methods:
+            // nsub.Mode.Returns("DEC");
             Assert.AreEqual("DEC", nsub.Mode);
         }
 
@@ -44,8 +46,7 @@ namespace NSubstituteTutorial
             }
 
             {
-                float remainder;
-                nsub.Divide(12, 5, out remainder).Returns(x =>
+                nsub.Divide(12, 5, out float remainder).Returns(x =>
                 {
                     x[2] = 0.4F; // [2] = 3th parameter remainder
                     return 2;
@@ -70,17 +71,18 @@ namespace NSubstituteTutorial
         [Test]
         public void ThrowExceptions()
         {
-            moq.Setup(calc => calc.Add(1, 1)).Throws<InvalidOperationException>();
-            Assert.Throws<InvalidOperationException>(() => moq.Object.Add(1, 1));
+            var moq2 = new Mock<ICalculator>();
+            moq2.Setup(calc => calc.Add(1, 1)).Throws<InvalidOperationException>();
+            Assert.Throws<InvalidOperationException>(() => moq2.Object.Add(1, 1));
 
-            moq.Setup(calc => calc.SetMode("HEX")).Throws(new ArgumentException());
-            Assert.Throws<ArgumentException>(() => moq.Object.SetMode("HEX"));
+            moq2.Setup(calc => calc.SetMode("HEX")).Throws(new ArgumentException());
+            Assert.Throws<ArgumentException>(() => moq2.Object.SetMode("HEX"));
 
             // using NSubstitute.ExceptionExtensions;
-            nsub.Add(1, 1).Throws(new Exception());
+            nsub.Add(1, 1).Throws(new InvalidOperationException());
             Assert.Throws<InvalidOperationException>(() => nsub.Add(1, 1));
 
-            nsub.When(x => x.SetMode("HEX")).Throw<Exception>();
+            nsub.When(x => x.SetMode("HEX")).Throw<ArgumentException>();
             Assert.Throws<ArgumentException>(() => nsub.SetMode("HEX"));
 
             // The extension method syntax is much cleaner

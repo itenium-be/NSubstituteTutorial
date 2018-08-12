@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("itenium")]
 [assembly: AssemblyProduct("NSubstituteTutorial")]
-[assembly: AssemblyCopyright("Copyright © itenium 2017")]
+[assembly: AssemblyCopyright("Copyright © itenium 2017-2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

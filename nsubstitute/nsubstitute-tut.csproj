@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="1-Tutorial.cs" />
     <Compile Include="2-Moq-Comparison.cs" />
+    <Compile Include="Calculator.cs" />
     <Compile Include="ICalculator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
