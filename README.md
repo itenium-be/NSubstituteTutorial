@@ -28,4 +28,4 @@ not covered in the blog posts.
 
 [NSubstitute]: https://github.com/nsubstitute/NSubstitute
 [Mock]: https://github.com/moq/moq4
-[nsubstitute-blog-post]: http://itenium.be/blog/dotnet/nsubstitute-tutorial
+[nsubstitute-blog-post]: https://itenium.be/blog/dotnet/nsubstitute-tutorial
